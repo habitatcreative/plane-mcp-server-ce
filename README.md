@@ -194,6 +194,22 @@ Without these variables, session-only tools are hidden. Prefer a session cookie
 over an account password. The cookie is the `session-id` value from an active
 browser session and must be replaced when it expires.
 
+A cookie cannot be renewed in-process: once it expires, a 401 retry only
+re-fetches the CSRF token, so the server cannot recover until it is restarted
+with a fresh value. Refresh it out of band with `scripts/refresh-session.sh`,
+which signs in with `PLANE_SESSION_EMAIL` / `PLANE_SESSION_PASSWORD` (no
+browser needed) and rewrites `PLANE_SESSION_COOKIE` in your env file
+(atomically, keeping its permissions; the cookie value is never echoed):
+
+```bash
+./scripts/refresh-session.sh                     # default env file: ~/.config/plane-mcp/env
+./scripts/refresh-session.sh /path/to/env-file   # or pass one explicitly
+```
+
+Requires `curl` and `python3`. Restart the MCP server afterwards — the cookie
+is only read at process start. Run it manually or from cron before the
+session expires.
+
 Page operations are exposed through the `page(action=...)` resource tool
 (`list`, `retrieve`, `create`, `update`, `archive`, `unarchive`, `delete`).
 The previous per-operation names below remain callable but are hidden from
