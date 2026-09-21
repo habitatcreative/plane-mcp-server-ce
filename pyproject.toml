@@ -1,6 +1,6 @@
 [project]
 name = "plane-community-mcp"
-version = "0.7.0"
+version = "0.7.1"
 description = "Community Edition and self-hosted focused MCP server for Plane"
 readme = "README.md"
 requires-python = ">=3.10"

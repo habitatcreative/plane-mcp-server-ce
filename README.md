@@ -16,7 +16,7 @@ Python 3.10 or later is required. Package: `plane-community-mcp`; command:
 
 ```bash
 uvx --from plane-community-mcp plane-mcp-server-ce --help
-uvx --from plane-community-mcp==0.7.0 plane-mcp-server-ce --help
+uvx --from plane-community-mcp==0.7.1 plane-mcp-server-ce --help
 ```
 
 `pip` / `pipx`:

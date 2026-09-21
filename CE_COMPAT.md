@@ -72,7 +72,7 @@ issue types/work-item types, and work-item property values.
 | `get_project_members` | `project-members-lite` | `project-members/` | lite-to-full fallback |
 | `list_cycles` | lite `cycles` | `cycles/` | lite-to-full fallback |
 | `list_modules` | lite `modules` | `modules/` | lite-to-full fallback |
-| `list_work_item_relations` | older SDK relation path | `work-items/{id}/relations/` | CE client route |
+| `list_work_item_relations` | older SDK used `issues/.../issue-relation/` | `work-items/{id}/relations/` | current SDK path matches CE; remaining break is Category 3 model shape |
 
 ### 🐛 Category 3 — Endpoint works but the SDK model fails
 
@@ -81,6 +81,7 @@ issue types/work-item types, and work-item property values.
 | `list_work_item_activities` | CE returns fractional `epoch`; SDK model required `int` | local CE model uses `float` |
 | `retrieve_work_item` with assignees | CE returns bare UUIDs rather than `UserLite`/`Label` | always expand `assignees,labels` |
 | `search_work_items` | CE returns integer `sequence_id` | fixed by SDK 0.2.19; verified with a result |
+| `list_work_item_relations` | CE returns `{project_id, issue_id}` objects per group; SDK expects `list[str]` | local CE model + `_get` bypass (PMCP-11) |
 
 ### 🚫 Category 2 — Not available in CE
 
