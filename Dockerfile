@@ -1,32 +1,35 @@
-# Use Python 3.11 as base image
-FROM python:3.11-slim
+# Hardened build (habitatcreative fork): pinned base and uv images, dependencies
+# installed from uv.lock (--frozen) so rebuilds of the same commit are identical,
+# and the server runs as an unprivileged user.
+FROM python:3.11.18-slim-bookworm
 
-# Set working directory
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
+# curl stays available for container health checks.
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv for faster package management
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.13.5 /uv /usr/local/bin/uv
 
-# Copy dependency files and application code
-COPY pyproject.toml ./
-COPY uv.lock* ./
+WORKDIR /app
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never
+
+# Dependencies first (cached layer), exactly as locked.
+COPY pyproject.toml uv.lock README.md ./
+RUN uv sync --frozen --no-dev --no-install-project
+
+# Then the application itself.
 COPY plane_mcp/ ./plane_mcp/
+RUN uv sync --frozen --no-dev
 
-# Install the package and dependencies using uv
-RUN uv pip install --system --no-cache .
+RUN useradd --system --uid 10001 --no-create-home mcp
+USER mcp
 
-# Expose port for the streamable HTTP transport.
+ENV PATH="/app/.venv/bin:$PATH" \
+    FASTMCP_PORT=8211
+
+# Streamable HTTP transport: /http/api-key/mcp
 EXPOSE 8211
 
-# Set environment variables with defaults
-ENV FASTMCP_PORT=8211
-
-# Default to streamable-http transport, but allow override via command
-# Users can override by passing different transport as CMD
 ENTRYPOINT ["python", "-m", "plane_mcp"]
 CMD ["http"]
